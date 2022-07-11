@@ -1,7 +1,5 @@
 # Notice
-Sorry for the incovinience, but due to some imperfections (mainly in active site preprocessing) the previous version was taken down, so I decided to start from scratch. Until the 10. july (10. june was written here, which was a typo) new version will be available, more precise than the previous one. Thank you for understanding.
-Tommorow, full code will be available.
-- [X] Completed redesigning *README.md* file
+The initial, reworked version is now available. Soon, download will be available through conda.
 
 # NDock
 NDock is a bioinformatic library capable of molecular docking using neural networks. It is a part of larger library, under the name of BIP (Bioinformatic Python), currently in development. 
