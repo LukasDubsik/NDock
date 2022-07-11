@@ -18,9 +18,11 @@ NDock is ***still in its early phases of development***, so it has yet to reach 
 Current extent of main fuctions of NDock library as of this update:
 
 ```python
-ndock = NDock(path_to_pdb) # Creates class of NDock with one protein
-path_to_result, results = ndock.Dock(path_to_sdf, site_name, site_simplification=False, energy_normalization=True,
-                            post_translation=True) # performs docking on molecule and specified site
+from NDock import Main
+
+ndock = Main.NDock(path_to_pdb) # Creates class of NDock with one protein
+path_to_result, results = ndock.Dock(path_to_sdf, site_name, site_simplification=False, energy_normalization=False,
+                            post_translation=False) # performs docking on molecule and specified site
 charges_molecule, charges_site = results.ElectricCharges() # Returns electrostatic charges of individual atoms, relies on RDKit
 score = results.Score(soft_docking = 1, solvation = True) # Accesses the score of finalised docking (docking score)
 ```
@@ -62,7 +64,7 @@ class NDockResults:
     Functions:
          __init__(self, site, molecule): 
              Assigns the values of molecule and site, which were taken fromNDock computations. Can 
-             also be initiated by user, if molecule and protein are given in rightclass format 
+             also be initiated by user, if molecule and protein are given in right class format 
              (SiteAmino, MoleculeAmino classes).
         ElectricCharges(self): 
             Doesn't take an input. It firstly exports the site and molecule as pdb and sdf file respectively,
@@ -97,5 +99,6 @@ More in depth informations will be available in ensuing research paper, link to 
 __Autodock__:
 - Eberhardt, J., Santos-Martins, D., Tillack, A.F., Forli, S. (2021). AutoDock Vina 1.2.0: New Docking Methods, Expanded Force Field, and Python Bindings. Journal of Chemical Information and Modeling.
 - Trott, O., & Olson, A. J. (2010). AutoDock Vina: improving the speed and accuracy of docking with a new scoring function, efficient optimization, and multithreading. Journal of computational chemistry, 31(2), 455-461.
+
 __RDKit__:
 - RDKit: Open-source cheminformatics; http://www.rdkit.org
