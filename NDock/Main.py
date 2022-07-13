@@ -78,7 +78,7 @@ class NDock:
         """
         normalized_site, transformation = NormalizeSite.NormalizeSite(self.pdb_lines, site_name, site_simplification)
         normalized_molecule = NormalizeMolecule.NormalizeMolecule(path_to_sdf)
-        CheckExtract(normalized_site, normalized_molecule)
+        self.CheckExtract(normalized_site, normalized_molecule)
         
         molecule_moves = NeuralDocking.GetMoleculeMoves(normalized_site, normalized_molecule)
         normalized_molecule.MoveMolecule(molecule_moves, transformation)
@@ -93,6 +93,27 @@ class NDock:
         results = NDockResults(normalized_site, normalized_molecule)
         
         return path_to_result, results
+    
+    def CheckExtract(self, site, molecule):
+        """
+            Helper function to check and bactrack irregularities and mistakes present in both normalized site and ligand (here under name               molecule). This function is to expand, as possible errors that could arise (mainly thanks to varience of pdb files) are still               being found and accounted for.
+        
+            Parameters:
+                site: SiteAmino class, contains list of all amino acids and their properties present in the protein's site.
+                molecule: MoleculeAmino, contains information to fully reconstruct molecule, list of atoms, bonds and more
+        
+            Returns:
+                Nothing, if no error is present. If some irregularity is found, error message, in the form of sys, is returned to user.
+            """
+        for amino in site.amino:
+            if len(amino.residues)==0:
+                sys.exit("There was a problem in extracting atoms for residue: " + print(amino))
+            
+        if len(molecule.atoms) <= 0:
+            sys.exit("There are no atoms present in the molecule.")
+            
+        if len(molecule.bonds) <= 0:
+            sys.exit("There are no bonds present in the molecule.")
     
     
 class NDockResults:
@@ -118,21 +139,52 @@ class NDockResults:
             Constains moleucle name, its bonds and atoms.
     """
     def __init__(self, site, molecule):
+        """
+        This function initiates the NDockResults class by taking both the SiteAmino and MoleculeAmino classes. These classes are normaly             returns from the NDoc.Dock function, but can also be created by the user.
+        
+        Parameters:
+            site: SiteAmino class, generally result from the NDock.Dock function.
+            molecule: MoleculeAmino, generally result from the NDock.Dock function.
+        
+        Returns:
+            None
+        """
         self.site = site
         self.molecule = molecule
         
     def compute_atom_distance(self, atom1_distances, atom2_distances):
-    
+        """
+        Auxilary function of the ElectricCharges function, present in the same class. Takes as input lists of atom positions and then               computes euclidian distance between both of them, units are intended to be angstorms, but depends on unit inputed.
+        
+        Parameters:
+            atom1_distances: List of floats, bears the atom's coordinates in space (x, y, z).
+            atom2_distances: Same as atom1_distances, just other atom.
+        
+        Returns:
+            distance: Float, gives the euclidian distance in space between two specified atoms, in units given.
+        """
         x1, y1, z1 = atom1_distances
         x2, y2, z2 = atom2_distances
 
         x_component = (x1-x2)**2
         y_component = (y1-y2)**2
         z_component = (z1-z2)**2
+        
+        distance = np.sqrt(x_component+y_component+z_component)
 
-        return np.sqrt(x_component+y_component+z_component)
+        return distance
         
     def ElectricCharges(self):
+        """
+        Is completely dependable on functions taken from RDKit package. Its purpose is to compute electric charges both for the active site         and for the ligand. It firstly exports both the molecule and the site in form of sdf and pdb files, respectively. Then they are             combined and embedded, extracting the computed charges.
+        
+        Parameters:
+            There are no additional parameters, all are taken from the class parameters.
+        
+        Returns:
+            molecule_charges: List of floats, this list containes list of charges in the same order as is the order of atoms in the                         self.molecule MoleculeAmino class.
+            site_charges: List of floats, this list containes list of charges in the same order as is the order of residues and their atoms                 in the self.site SiteAmino class.
+        """
         path_molecule = self.molecule.ExportPath()
         path_site = self.site.ExportPath()
         
@@ -152,6 +204,16 @@ class NDockResults:
         return molecule_charges, site_charges
     
     def Score(self, soft_docking=1, solvation = True):
+        """
+        This function uses physical equation which combines Lenard-Jones Potential, electrostatic potentials and, if wished by the user,             also solvation to find estimation of free energy of ligand-site binding. For better, converging result, additional constants are             used. These are taken from the Autodock software. Soft docking, acounting for dynamic active site, is available, but set to zero             initially. Docking score serves just as rough estimate, and it should be taken lightly, only as general guide to the results. It can         sometimes happen that the true result has score in hundreds of Joules, but these are rare cases.
+        
+        Parameters:
+            soft_docking=1: Float, number used for soft docking, should be between 0 and 1, the smaller the soft_docking is, the more                       dynamic site is accounted. The correct number depends on situation but good start is around 0.7-0.8.
+            solvation=True: Bool, says function whether to account for solvation, it should be used in sites where lot of water is present                   before docking, but not so much in hydrophobic ones, as it then skews the energy estimation.
+        
+        Returns:
+            score: Float, represents the estimation of the free energy tahat is released during the ligand-site binding process, the more                   negative it is, the better the result should be (it is only rough estimate, so be beware of inconsistensies, final judgement                 should always rest on user).
+        """
         molecule_atoms = self.molecule.atoms
         site_atoms = []
         for residue in self.site.amino:
@@ -191,17 +253,6 @@ class NDockResults:
                 else:
                     dG_solvate = 0
             
-                score += 0.1485*dG_Waals + 0.1146*dG_elec + 0.1711*dG_solvate #Constants for better results, adopted from Autodock4
+                score += 0.1485*dG_Waals + 0.1146*dG_elec + 0.1711*dG_solvate #Constants for better results, adopted from Autodock
         
         return score
-    
-def CheckExtract(site, molecule):
-    for amino in site.amino:
-        if len(amino.residues)==0:
-            sys.exit("There was a problem in extracting atoms for residue: " + print(amino))
-            
-    if len(molecule.atoms) <= 0:
-        sys.exit("There are no atoms present in the molecule.")
-            
-    if len(molecule.bonds) <= 0:
-        sys.exit("There are no bonds present in the molecule.")
