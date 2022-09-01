@@ -76,17 +76,6 @@ class NDockResults:
             Constains moleucle name, its bonds and atoms. 
     """
 ```
-## Future development
-The next, foreseeable development consists of: 
-- [ ] Finishing commenting all parts of the code (currently full comments available only in main functions).
-- [ ] Expanding available functions in NDockResults class.
-- [ ] Fixing the post translation function, which currently does not work as result of errors in orbital overlap calculations. 
-- [ ] Adding the support for mmcif files of proteins and other files for molecules.
-- [ ] Adding full reader and writer class for pdb and sdf files for easier preparation of site and molecule by the user.
-- [ ] Removing reliance on RDKit functions by adding own functions (currently in progress) and migrating those functions to C++.
-And of course removal of possible bugs and general betterment of program precision.
-More in depth informations will be available in ensuing research paper, link to which will be given here.
-
 ### Main libraries used
 - RDKit
 - Numpy
