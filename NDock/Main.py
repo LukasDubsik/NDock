@@ -253,6 +253,6 @@ class NDockResults:
                 else:
                     dG_solvate = 0
             
-                score += 0.1485*dG_Waals + 0.1146*dG_elec + 0.1711*dG_solvate #Constants for better results, adopted from Autodock
+                score += 0.1485*dG_Waals + 0.1146*dG_elec + 0.1711*dG_solvate
         
         return score
